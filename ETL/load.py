@@ -1,5 +1,6 @@
-# module responsible for loading data into PostGIS.
-
+"""
+Module responsible for loading data into PostGIS.
+"""
 
 from sqlalchemy import create_engine
 from geoalchemy2 import Geometry
@@ -7,7 +8,6 @@ from config import DB_CONFIG
 
 
 def get_engine():
-    """Create SQLAlchemy engine using database configuration."""
     connection_string = (
         f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}"
         f"@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
@@ -16,7 +16,6 @@ def get_engine():
 
 
 def load_to_postgis(gdf, table_name="green_areas"):
-    """Load GeoDataFrame into PostGIS table."""
 
     engine = get_engine()
 
@@ -24,5 +23,8 @@ def load_to_postgis(gdf, table_name="green_areas"):
         name=table_name,
         con=engine,
         if_exists="replace",
-        index=False
+        index=False,
+        dtype={
+            "geometry": Geometry("MULTIPOLYGON", srid=4326)
+        }
     )
