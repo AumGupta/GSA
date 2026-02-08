@@ -1,0 +1,4 @@
+requests
+geopandas   
+sqlalchemy
+geoalchemy2
