@@ -2,3 +2,4 @@ requests
 geopandas   
 sqlalchemy
 geoalchemy2
+psycopg2
