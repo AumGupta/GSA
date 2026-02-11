@@ -1,10 +1,16 @@
+# Accessibility router for the Green Spaces Accessibility API
+# This module defines endpoints related to calculating the accessibility score of green spaces based on various factors.
+
+# importing necessary libraries
 from fastapi import APIRouter
 from API.db import get_connection
 import math
 from collections import Counter
 
+# Creating the router for accessibility endpoints
 router = APIRouter(prefix="/accessibility", tags=["Accessibility"])
 
+# Endpoint to calculate the accessibility score for a given point
 @router.get("/accessibility-score")
 def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
     """
@@ -31,7 +37,8 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
                 ST_SetSRID(ST_Point(%s, %s), 4326),
                 3857
             )
-        ) AS distance_m
+        ) AS distance_m,
+        ST_AsGeoJSON(geometry) AS geometry
     FROM green_areas
     WHERE ST_DWithin(
         ST_Transform(geometry, 3857),
@@ -50,9 +57,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
     cur.close()
     conn.close()
 
-    # -----------------------------
-    # No parks case
-    # -----------------------------
+    # If no parks found, return 0 score
     if len(parks) == 0:
         return {
             "accessibility_score": 0.0,
@@ -65,9 +70,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
             "parks_found": 0
         }
 
-    # -----------------------------
-    # PROXIMITY SCORE
-    # -----------------------------
+    # Proximity score: based on distance to nearest park, with a decay function
     proximity_total = 0
 
     for park in parks:
@@ -81,21 +84,15 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
 
     proximity_score = (proximity_total / len(parks))* 10
 
-    # -----------------------------
-    # QUANTITY SCORE
-    # -----------------------------
+    # Quantity score: based on number of parks found
     n_parks = len(parks)
     quantity_score = (1 - math.exp(-n_parks / 5)) * 10
 
-    # -----------------------------
-    # AREA SCORE
-    # -----------------------------
+    # Area score: based on total area of parks found
     total_area = sum(park[3] for park in parks)  # area_m2
     area_score = min(1, total_area / 50000) * 10
 
-    # -----------------------------
-    # DIVERSITY SCORE
-    # -----------------------------
+    # Diversity score: based on variety of park types
     types = [park[2] for park in parks if park[2] is not None]
 
     if len(types) <= 1:
@@ -111,9 +108,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
 
         diversity_score = (H / math.log(len(counts))) * 10
 
-    # -----------------------------
-    # FINAL INDEX (weighted)
-    # -----------------------------
+    # Final accessibility score: weighted average of all components
     accessibility = (
         0.4 * proximity_score +
         0.3 * area_score +
@@ -128,7 +123,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
             "quantity": round(quantity_score, 2),
             "area": round(area_score, 2),
             "diversity": round(diversity_score, 2),
-            "parks": [{"gid": p[0], "name": p[1]} for p in parks]
+            "parks": [{"gid": p[0], "name": p[1],"type": p[2], "area": p[3], "distance": p[4], "geometry": p[5]} for p in parks],
         },
         "parks_found": n_parks,
         "buffer_m": buffer_m
