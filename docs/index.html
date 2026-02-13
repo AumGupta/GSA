@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GSA - Green Space Accessibility</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+    <link rel="icon" href="assets/favicon/favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="assets/favicon/site.webmanifest">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="sidebar">
+            <div class="title-block">
+                <div class="header">
+                    <a href="./index.html">
+                        <img src="assets/favicon/logo.svg" alt="GSA">
+                    </a>
+                    <h1>GSA</h1>
+                </div>
+                <h2>Green Space Accessibility</h2>
+            </div>
+            <div class="sidebar-content">
+
+                <div class="search-section">
+                    <h3 class="section-heading">
+                        Address
+                        <button id="resetAddress" class="reset-btn"><img src="assets/icons/reset.svg"
+                                alt="Reset"></button>
+                    </h3>
+                    <div class="search-wrapper">
+                        <input type="text" id="addressInput" placeholder="Search address...">
+                        <span class="clear-btn" id="clearSearch">✕</span>
+                        <div class="suggestions-wrapper">
+                            <div id="suggestions" class="suggestions"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="latlon-section">
+                    <div class="coord-group">
+                        <label>Latitude</label>
+                        <input type="text" id="latInput">
+                    </div>
+
+                    <div class="coord-group">
+                        <label>Longitude</label>
+                        <input type="text" id="lonInput">
+                    </div>
+                </div>
+
+                <button class="calculate-btn" onclick="getScore()">
+                    Calculate Score
+                </button>
+
+                <div class="results-section">
+
+                    <div class="score-card">
+                        <h3>Accessibility Score</h3>
+                        <div class="main-score" id="score">-</div>
+
+                        <div class="breakdown">
+                            <p>Proximity: <span id="proximity">-</span></p>
+                            <p class="score-desc" id="proximity-desc">-</p>
+
+                            <p>Quantity: <span id="quantity">-</span></p>
+                            <p class="score-desc" id="quantity-desc">-</p>
+
+                            <p>Area: <span id="area">-</span></p>
+                            <p class="score-desc" id="area-desc">-</p>
+
+                            <p>Diversity: <span id="diversity">-</span></p>
+                            <p class="score-desc" id="diversity-desc">-</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="footer">
+            by Om & Santi
+        </div>
+
+        <div id="map"></div>
+
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
