@@ -1,0 +1,10 @@
+{
+    "name": "GSA - Green Space Accessibility",
+    "short_name": "GSA",
+    "description": "Get real-time accessibility scores for green spaces. Search for any address and see how accessible nearby parks are based on distance, size, and amenities.",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#FFFFFF",
+    "orientation": "portrait"
+}
