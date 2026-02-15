@@ -1,5 +1,5 @@
-// const API_BASE_URL = "http://";
-const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
+const API_BASE_URL = "http://127.0.0.1:8000";
+// const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
 
 // // worldwide search
 // const SEARCH_QUERY = `https://nominatim.openstreetmap.org/search?format=json&limit=10&q=${query}`;
@@ -235,8 +235,8 @@ function getScore() {
 
 
     // // for testing with local JSON file
-    fetch(API_BASE_URL)
-    // fetch(API_BASE_URL+`/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
+    // fetch(API_BASE_URL)
+    fetch(API_BASE_URL+`/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
     .then(res => res.json())
     .then(data => {
 
