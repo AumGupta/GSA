@@ -44,4 +44,4 @@ CREATE TABLE IF NOT EXISTS ways (
 -- 5. Critical Indices for Performance
 CREATE INDEX IF NOT EXISTS idx_green_areas_geom ON green_areas USING GIST (geometry);
 CREATE INDEX IF NOT EXISTS idx_ways_geom ON ways USING GIST (geometry);
-CREATE INDEX IF NOT EXISTS idx_vertices_geom ON vertices USING GIST (the_geom);
+CREATE INDEX IF NOT EXISTS idx_vertices_geom ON vertices USING GIST (geometry);
