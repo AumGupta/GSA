@@ -15,7 +15,7 @@ def build_routing_query(bbox):
     south, west, north, east = bbox
     query = f"""[out:json][timeout:180];
     (
-      way["highway"~"^(primary|secondary|tertiary|residential|service|footway|path|cycleway)$"]({south},{west},{north},{east});
+      way["highway"~"^(motorway|motorway_link|trunk|trunk_link|primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified|residential|living_street|service|road|track|bus_guideway|escape|raceway|footway|bridleway|steps|corridor|path|cycleway|pedestrian)$"]({south},{west},{north},{east});
     );
     out geom;
     """
