@@ -1,4 +1,4 @@
-// const API_BASE_URL = "http://";
+// const API_BASE_URL = "http://192.168.68.115:8000";
 const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
 
 // // worldwide search
@@ -28,6 +28,7 @@ let marker;
 let bufferCircle;
 let currentLocation = null;
 let parksLayer;
+let routeLayer;
 
 const map = L.map('map', {
     center: defaultLocation,
@@ -52,14 +53,14 @@ L.control.zoom({
 const recenterControl = L.Control.extend({
     options: { position: 'bottomright' },
 
-    onAdd: function() {
+    onAdd: function () {
         recenterBtn = L.DomUtil.create('div', 'recenter-control');
         recenterBtn.innerHTML = "<img src='assets/icons/recenter.svg' alt='Recenter'>";
         recenterBtn.title = "Recenter Map";
 
         L.DomEvent.disableClickPropagation(recenterBtn);
 
-        recenterBtn.onclick = function() {
+        recenterBtn.onclick = function () {
             if (currentLocation) {
                 map.setView(getOffsetLatLng(currentLocation, currentZoom), currentZoom);
             } else {
@@ -86,7 +87,7 @@ const lollipopIcon = L.divIcon({
     iconAnchor: [10, 40]
 });
 
-map.on('click', function(e) {
+map.on('click', function (e) {
     updateLocation(e.latlng.lat, e.latlng.lng);
 });
 
@@ -103,6 +104,7 @@ function updateLocation(lat, lon) {
     if (marker) map.removeLayer(marker);
     if (bufferCircle) map.removeLayer(bufferCircle);
     if (parksLayer) map.removeLayer(parksLayer);
+    if (routeLayer) map.removeLayer(routeLayer);
 
     marker = L.marker([lat, lon], { icon: lollipopIcon }).addTo(map);
 
@@ -117,7 +119,7 @@ function getOffsetLatLng(latlng, zoom) {
 }
 
 
-addressInput.addEventListener("input", function() {
+addressInput.addEventListener("input", function () {
     clearTimeout(debounceTimer);
     const query = this.value;
 
@@ -128,7 +130,7 @@ addressInput.addEventListener("input", function() {
         clearBtn.style.display = "none";
         return;
     }
-    
+
     clearBtn.style.display = query ? "block" : "none";
 
     debounceTimer = setTimeout(() => {
@@ -192,12 +194,14 @@ resetBtn.addEventListener("click", () => {
     if (marker) map.removeLayer(marker);
     if (bufferCircle) map.removeLayer(bufferCircle);
     if (parksLayer) map.removeLayer(parksLayer);
+    if (routeLayer) map.removeLayer(routeLayer);
+    routeLayer = null;
     marker = null;
     bufferCircle = null;
     currentLocation = null;
 
     // reset map view
-    map.setView(getOffsetLatLng(defaultLocation, defaultZoom), defaultZoom);  
+    map.setView(getOffsetLatLng(defaultLocation, defaultZoom), defaultZoom);
 });
 
 latInput.addEventListener("change", updateFromLatLonInputs);
@@ -223,6 +227,7 @@ function getScore() {
 
     if (bufferCircle) map.removeLayer(bufferCircle);
     if (parksLayer) map.removeLayer(parksLayer);
+    if (routeLayer) map.removeLayer(routeLayer);
 
     bufferCircle = L.circle([lat, lon], {
         radius: 500,
@@ -237,18 +242,19 @@ function getScore() {
     // // for testing with local JSON file
     fetch(API_BASE_URL)
     // fetch(API_BASE_URL+`/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
-    .then(res => res.json())
-    .then(data => {
+        .then(res => res.json())
+        .then(data => {
 
-        updateScores(data);
-        drawParks(data.scores.parks);
+            updateScores(data);
+            drawParks(data.scores.parks);
+            drawRoute(data.nearest_park_route);
 
-        scoreCard.style.visibility = "visible";
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Error fetching accessibility data.");
-    });
+            scoreCard.style.visibility = "visible";
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error fetching accessibility data.");
+        });
 
 }
 
@@ -290,45 +296,73 @@ function updateScores(data) {
 
 function drawParks(parks) {
 
-    parksLayer = L.layerGroup().addTo(map);
+    if (parksLayer) map.removeLayer(parksLayer);
+
+    parksLayer = L.layerGroup();
 
     parks.forEach(park => {
 
-        const geojson = JSON.parse(park.geometry);
-
-        L.geoJSON(geojson, {
-            style: function () {
-
-                let color;
-
-                switch (park.type) {
-                    case "park":
-                        color = "#32cd32";
-                        break;
-                    case "garden":
-                        color = "#32cd32";
-                        break;
-                    case "grass":
-                        color = "#32cd32";
-                        break;
-                    default:
-                        color = "#32cd32";
-                }
-
-                return {
-                    color: color,
-                    weight: 1,
-                    fillColor: color,
-                    fillOpacity: 0.9
-                };
+        const geojsonFeature = {
+            type: "Feature",
+            geometry: park.geometry,
+            properties: {
+                name: park.name,
+                type: park.type,
+                area: park.area,
+                distance: park.distance
             }
-        })
-        .bindPopup(`
+        };
+
+        const layer = L.geoJSON(geojsonFeature, {
+            style: {
+                color: "#4ade80",
+                weight: 1,
+                fillOpacity: 0.4
+            }
+        });
+
+        layer.bindPopup(`
             <strong>${park.name}</strong><br>
             Type: ${park.type}<br>
-            Area: ${Math.round(park.area)} m²<br>
-            Distance: ${Math.round(park.distance)} m
-        `)
-        .addTo(parksLayer);
+            Area: ${park.area.toFixed(0)} m²<br>
+            Distance: ${park.distance.toFixed(0)} m
+        `);
+
+        parksLayer.addLayer(layer);
     });
+
+    parksLayer.addTo(map);
+}
+
+
+function drawRoute(routeFeature) {
+
+    if (!routeFeature) return;
+
+    routeLayer = L.geoJSON(routeFeature, {
+        style: function () {
+            return {
+                color: "#f92672",
+                weight: getRouteWeight(map.getZoom()),
+                opacity: 0.95,
+                lineCap: "round",
+                lineJoin: "round"
+            };
+        }
+    }).addTo(map);
+
+    routeLayer.bringToFront();
+}
+
+function getRouteWeight(zoom) {
+    const minZoom = 12;
+    const maxZoom = 18;
+    const minWeight = 8;
+    const maxWeight = 2;
+
+    const clampedZoom = Math.max(minZoom, Math.min(maxZoom, zoom));
+
+    return minWeight + 
+        ((clampedZoom - minZoom) / (maxZoom - minZoom)) * 
+        (maxWeight - minWeight);
 }
