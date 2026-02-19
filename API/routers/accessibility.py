@@ -9,6 +9,7 @@ import math
 from collections import Counter
 
 from API.routers.routing import route_to_nearest_park
+from API.routers.spatial import get_green_areas_buffer
 
 # Creating the router for accessibility endpoints
 router = APIRouter(prefix="/accessibility", tags=["Accessibility"])
@@ -122,6 +123,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
         0.2 * quantity_score +
         0.1 * diversity_score
     )
+    #im_in_a_park = get_green_areas_buffer(lat, lon, buffer_m=0)
     nearest_park_route = route_to_nearest_park(lat, lon)
     return {
         "accessibility_score": round(accessibility, 2),
