@@ -41,7 +41,20 @@ CREATE TABLE IF NOT EXISTS ways (
     geometry GEOMETRY(LineString, 4326)
 );
 
+-- 5. feedback Table
+CREATE TABLE IF NOT EXISTS feedback (
+    id SERIAL PRIMARY KEY,
+    lat FLOAT,
+    lon FLOAT,
+    liked BOOLEAN,
+    accessibility_score BIGINT,
+    proximity_score BIGINT,
+    quantity_score BIGINT,
+    area_score BIGINT,
+    diversity_score BIGINT
+);
+
 -- 5. Critical Indices for Performance
 CREATE INDEX IF NOT EXISTS idx_green_areas_geom ON green_areas USING GIST (geometry);
 CREATE INDEX IF NOT EXISTS idx_ways_geom ON ways USING GIST (geometry);
-CREATE INDEX IF NOT EXISTS idx_vertices_geom ON vertices USING GIST (the_geom);
+CREATE INDEX IF NOT EXISTS idx_vertices_geom ON vertices USING GIST (geometry);
