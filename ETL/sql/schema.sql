@@ -46,14 +46,12 @@ CREATE TABLE IF NOT EXISTS feedback (
     id SERIAL PRIMARY KEY,
     lat FLOAT,
     lon FLOAT,
+    liked BOOLEAN,
     accessibility_score BIGINT,
     proximity_score BIGINT,
     quantity_score BIGINT,
     area_score BIGINT,
-    diversity_score BIGINT,
-    nearest_ga INTEGER,
-    comment TEXT,
-    CONSTRAINT fk_green_areas FOREIGN KEY (nearest_ga) REFERENCES green_areas(id)
+    diversity_score BIGINT
 );
 
 -- 5. Critical Indices for Performance
