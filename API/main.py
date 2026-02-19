@@ -30,4 +30,4 @@ def root():
 # Conetion with the spatial router
 app.include_router(spatial.router, prefix="/api/v1")
 app.include_router(accessibility.router, prefix="/api/v1")
-# app.include_router(routing.router, prefix="/api/v1/routing")
+app.include_router(routing.router, prefix="/api/v1/routing")

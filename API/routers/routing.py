@@ -3,68 +3,93 @@
 # to it using pgRouting. 
 
 # importing necessary libraries
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from API.db import get_connection
+import json
 
 # Creating the router for routing endpoints
 router = APIRouter(prefix="/routing", tags=["Routing"])
 
-# Endpoint to calculate walking distance to the closest park using pgRouting
-@router.get("/closest-park")
-def closest_park_route(lat: float, lon: float):
+
+# Endpoint to calculate the route to the nearest park
+@router.get("/to-nearest-park")
+def route_to_nearest_park(lat: float, lon: float):
+    """
+    Computes a walking route from the user location
+    to the nearest green area using pgRouting.
+    """
 
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute("""
-        SELECT id
-        FROM ways_vertices_pgr
-        ORDER BY the_geom <-> ST_SetSRID(ST_Point(%s, %s), 4326)
-        LIMIT 1;
-    """, (lon, lat))
+    query = """
+        WITH user_loc AS (
+            SELECT ST_SetSRID(ST_Point(%s, %s), 4326) AS geom
+        ),
+        nearest_park AS (
+            SELECT id, name, geometry 
+            FROM green_areas 
+            ORDER BY geometry <-> (SELECT geom FROM user_loc) 
+            LIMIT 1
+        ),
+        nodes AS (
+            SELECT 
+                (SELECT v.id FROM vertices v 
+                    ORDER BY v.geometry <-> (SELECT geom FROM user_loc) 
+                    LIMIT 1) as start_id,
 
-    start_node = cur.fetchone()[0]
-
-    query = f"""
-    WITH start AS (
-        SELECT {start_node} AS id
-    ),
-    park_vertices AS (
-        SELECT
-            g.gid,
-            v.id AS vertex_id
-        FROM green_areas g
-        JOIN ways_vertices_pgr v
-        ON ST_DWithin(v.the_geom, ST_Centroid(g.geom), 50)
-        LIMIT 20
-    ),
-    route AS (
-        SELECT *
-        FROM pgr_dijkstra(
-            'SELECT gid as id, source, target, length as cost FROM ways',
-            (SELECT id FROM start),
-            ARRAY(SELECT vertex_id FROM park_vertices),
-            directed := false
+                (SELECT v.id FROM vertices v 
+                    ORDER BY v.geometry <-> ST_Centroid((SELECT geometry FROM nearest_park)) 
+                    LIMIT 1) as end_id
+        ),
+        route_calc AS (
+            SELECT path.seq, w.geometry, w.length_m
+            FROM pgr_dijkstra(
+                'SELECT id, source, target, cost, reverse_cost FROM ways',
+                (SELECT start_id FROM nodes), 
+                (SELECT end_id FROM nodes), 
+                directed := false
+            ) AS path
+            JOIN ways AS w ON path.edge = w.id
         )
-    )
-    SELECT
-        SUM(w.length) AS distance_m
-    FROM route r
-    JOIN ways w ON r.edge = w.gid;
+        SELECT 
+            COALESCE(
+                (SELECT ST_AsGeoJSON(ST_LineMerge(ST_Union(geometry))) FROM route_calc),
+                ST_AsGeoJSON(ST_MakeLine(
+                    (SELECT geometry FROM vertices WHERE id = (SELECT start_id FROM nodes)),
+                    (SELECT geometry FROM vertices WHERE id = (SELECT end_id FROM nodes))
+                ))
+            ) as route_geojson,
+            COALESCE((SELECT SUM(length_m) FROM route_calc), 0) as total_distance_m,
+            CASE 
+                WHEN (SELECT COUNT(*) FROM route_calc) > 0 THEN 'CONNECTED' 
+                ELSE 'DISCONNECTED' 
+            END as status,
+            (SELECT name FROM nearest_park) as destination_park
+        LIMIT 1;
     """
 
-    cur.execute(query)
-    distance = cur.fetchone()[0]
+    # IMPORTANT: PostGIS expects (lon, lat)
+    cur.execute(query, (lon, lat))
+    result = cur.fetchone()
 
     cur.close()
     conn.close()
 
+    if result is None:
+        raise HTTPException(status_code=404, detail="No route found")
+
+    # Convert GeoJSON string from Postgres into Python dict
+    route_geometry = json.loads(result[0])
+
     return {
-        "walking_distance_m": distance
+        "type": "Feature",
+        "geometry": route_geometry,
+        "properties": {
+            "distance_m": round(result[1], 2),
+            "status": result[2],
+            "destination_park": result[3]
+        }
     }
 
-"""
-    Run this in the database to create the necessary indexes for pgRouting performance:
-    CREATE INDEX ways_geom_idx ON ways USING GIST(the_geom);
-    CREATE INDEX vertices_geom_idx ON ways_vertices_pgr USING GIST(the_geom);
-"""
+
