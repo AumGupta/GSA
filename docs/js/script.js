@@ -1,4 +1,4 @@
-// const API_BASE_URL = "http://192.168.68.115:8000";
+// const API_BASE_URL = "http://192.168.68.107:8000";
 const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
 
 // // worldwide search
@@ -7,10 +7,19 @@ const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON f
 const SEARCH_QUERY = "https://nominatim.openstreetmap.org/search?format=json&limit=10&countrycodes=pt&bounded=1&viewbox=-9.25,38.85,-9.05,38.65&q=${query}";
 const BASE_MAP = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
+const isMobileDevice =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+    );
+
+
+
 const defaultLocation = [38.7369, -9.1427];
-const defaultZoom = 13;
-const currentZoom = 16;
-const sidebarWidthPercent = 30;
+const defaultZoom = isMobileDevice ? 12 : 13;
+const currentZoom = isMobileDevice ? 15 : 16;
+
+const sidebarWidthPercent = isMobileDevice ? 0 : 30;
+const bottomPanelHeightPercent = isMobileDevice ? 8 : 0;
 
 const resetBtn = document.getElementById("resetAddress");
 const latInput = document.getElementById("latInput");
@@ -21,6 +30,12 @@ const suggestionsWrapper = document.querySelector(".suggestions-wrapper");
 const clearBtn = document.getElementById("clearSearch");
 const searchWrapper = document.querySelector(".search-wrapper");
 const scoreCard = document.querySelector(".score-card");
+
+const thumbUpBtn = document.getElementById("thumbUp");
+const thumbDownBtn = document.getElementById("thumbDown");
+
+thumbUpBtn.addEventListener("click", () => sendFeedback(1));
+thumbDownBtn.addEventListener("click", () => sendFeedback(0));
 
 let debounceTimer;
 let recenterBtn;
@@ -40,18 +55,18 @@ const map = L.map('map', {
 L.tileLayer(BASE_MAP).addTo(map);
 
 L.control.scale({
-    position: 'bottomleft',
+    position: isMobileDevice ? 'topleft' : 'bottomleft',
     metric: true,
     imperial: false,
     maxWidth: 200
 }).addTo(map);
 
 L.control.zoom({
-    position: 'bottomright'
+    position: isMobileDevice ? 'topright' : 'bottomright'
 }).addTo(map);
 
 const recenterControl = L.Control.extend({
-    options: { position: 'bottomright' },
+    options: { position: isMobileDevice ? 'topright' : 'bottomright' },
 
     onAdd: function () {
         recenterBtn = L.DomUtil.create('div', 'recenter-control');
@@ -94,6 +109,7 @@ map.on('click', function (e) {
 
 
 function updateLocation(lat, lon) {
+    scoreCard.style.visibility = "hidden";
 
     currentLocation = [lat, lon];
     resetBtn.style.visibility = "visible";
@@ -113,8 +129,22 @@ function updateLocation(lat, lon) {
 
 function getOffsetLatLng(latlng, zoom) {
     const projectedPoint = map.project(latlng, zoom);
-    const overlayWidth = map.getSize().x * (sidebarWidthPercent / 100);
-    const shiftedPoint = projectedPoint.subtract([overlayWidth / 2, 0]);
+
+    const mapSize = map.getSize();
+
+    const overlayWidth = mapSize.x * (sidebarWidthPercent / 100);
+    const offsetX = overlayWidth / 2;
+
+    const overlayHeight = mapSize.y * (bottomPanelHeightPercent / 100);
+    const offsetY = overlayHeight / 2;
+
+    let shiftedPoint;
+
+    if (isMobileDevice) {
+        shiftedPoint = projectedPoint.subtract([0, -offsetY]);
+    } else {
+        shiftedPoint = projectedPoint.subtract([offsetX, 0]);
+    }
     return map.unproject(shiftedPoint, zoom);
 }
 
@@ -241,7 +271,7 @@ function getScore() {
 
     // // for testing with local JSON file
     fetch(API_BASE_URL)
-    // fetch(API_BASE_URL+`/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
+    // fetch(API_BASE_URL + `/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
         .then(res => res.json())
         .then(data => {
 
@@ -362,7 +392,67 @@ function getRouteWeight(zoom) {
 
     const clampedZoom = Math.max(minZoom, Math.min(maxZoom, zoom));
 
-    return minWeight + 
-        ((clampedZoom - minZoom) / (maxZoom - minZoom)) * 
+    return minWeight +
+        ((clampedZoom - minZoom) / (maxZoom - minZoom)) *
         (maxWeight - minWeight);
+}
+
+
+function sendFeedback(liked) {
+
+    if (liked == 1) {
+        thumbUpBtn.classList.add('animate-up')
+        setTimeout(() => {
+            thumbUpBtn.classList.remove('animate-up');
+        }, 400);
+    } else {
+        thumbDownBtn.classList.add('animate-down')
+        setTimeout(() => {
+            thumbDownBtn.classList.remove('animate-down');
+        }, 400);
+    }
+
+    if (!currentLocation) return;
+
+    const lat = currentLocation[0];
+    const lon = currentLocation[1];
+
+    const payload = {
+        lat: lat,
+        lon: lon,
+        liked: liked,
+        accessibility_score: parseFloat(document.getElementById("score").innerText),
+        proximity_score: parseFloat(document.getElementById("proximity").innerText),
+        quantity_score: parseFloat(document.getElementById("quantity").innerText),
+        area_score: parseFloat(document.getElementById("area").innerText),
+        diversity_score: parseFloat(document.getElementById("diversity").innerText),
+        timestamp: new Date().toISOString(),
+    };
+
+    fetch(API_BASE_URL + `/api/v1/feedback/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to send feedback");
+            return res.json();
+        })
+        .then(() => {
+
+            if (liked === 1) {
+                thumbUpBtn.classList.add("active");
+                thumbDownBtn.classList.remove("active");
+            } else {
+                thumbDownBtn.classList.add("active");
+                thumbUpBtn.classList.remove("active");
+            }
+
+            console.log("Feedback saved");
+        })
+        .catch(err => {
+            console.error(err);
+        });
 }
