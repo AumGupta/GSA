@@ -36,18 +36,20 @@ button:focus {
 .container {
     position: relative;
     height: 100vh;
+    padding: 12px;
 }
 
 .sidebar {
     position: relative;
     z-index: 2;
     width: 30%;
-    height: 100vh;
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: first baseline;
     backdrop-filter: blur(2px);
     background: var(--sidebar-bg);
+    border-radius: 36px;
 }
 
 /* TITLE */
@@ -109,10 +111,6 @@ button:focus {
     transition: rotate 0.3s;
 }
 
-.reset-btn:hover img{
-    rotate: 360deg;
-}
-
 .search-wrapper {
     position: relative;
     width: 100%;
@@ -155,7 +153,7 @@ button:focus {
     position: absolute;
     visibility: hidden;
     left: 0;
-    right: 0; 
+    right: 0;
     top: 100%;
     background: var(--background-black);
     border: 1px solid var(--primary-color);
@@ -170,11 +168,6 @@ button:focus {
     color: var(--text-light);
     cursor: pointer;
     background: var(--background-black);
-}
-
-.suggestions div:hover {
-    background: var(--primary-color);
-    color: var(--text-dark);
 }
 
 .suggestions::-webkit-scrollbar {
@@ -237,23 +230,25 @@ button:focus {
     cursor: pointer;
 }
 
-.calculate-btn:hover {
-    background: var(--primary-color);
-    color: var(--secondary-color);
-    transition: background 0.4s, color 0.4s;
-}
 
-.results-section h3 {
-    color: var(--primary-color);
+
+.results-section {
+    position: relative;
+    z-index: 2;
+    width: 30%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: first baseline;
 }
 
 .score-card {
     visibility: hidden;
     background: var(--primary-color);
-    border-radius: 20px;
     padding: 20px;
     margin: 12px 0;
     color: var(--text-dark);
+    border-radius: 36px;
 }
 
 .score-card h3 {
@@ -267,6 +262,53 @@ button:focus {
     text-align: center;
 }
 
+.feedback-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0px;
+}
+
+.feedback-btn {
+    background: none;
+    border: none;
+    border-radius: 12px;
+    padding: 0 6px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    opacity: 0.3;
+}
+
+.feedback-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+.feedback-btn.active {
+    opacity: 1;
+}
+
+@keyframes jumpUp {
+    0%   { transform: translateY(0); }
+    30%  { transform: translateY(-8px); }
+    60%  { transform: translateY(2px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes jumpDown {
+    0%   { transform: translateY(0); }
+    30%  { transform: translateY(8px); }
+    60%  { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+}
+
+.feedback-btn.animate-up {
+    animation: jumpUp 0.4s ease;
+}
+
+.feedback-btn.animate-down {
+    animation: jumpDown 0.4s ease;
+}
+
 .breakdown {
     margin-top: 15px;
     font-size: 14px;
@@ -274,14 +316,14 @@ button:focus {
 
 .score-desc {
     font-size: 11px;
-    color: var(--text-dark);
+    color: var(--text-muted);
     margin-bottom: 8px;
 }
 
 .footer {
     position: absolute;
-    bottom: 24px;
-    left: 24px;
+    top: 0px;
+    right: 12px;
     z-index: 5;
     font-size: 11px;
     color: var(--text-muted);
@@ -305,7 +347,7 @@ button:focus {
 /* Scale */
 .leaflet-control-scale {
     padding: 3px 8px;
-    margin-left: 30vw !important;
+    /* margin-left: 30vw !important; */
 }
 
 .leaflet-control-scale-line {
@@ -344,10 +386,6 @@ button:focus {
     border-bottom: none;
 }
 
-.leaflet-control-zoom a:hover {
-    background: var(--primary-color);
-    color: var(--text-dark);
-}
 
 .leaflet-control-zoom a.leaflet-disabled {
     background: var(--disabled-bg);
@@ -365,22 +403,13 @@ button:focus {
     justify-content: center;
     border-radius: 10px;
     cursor: pointer;
-    border: 2px solid var(--border-dark);
     transition: background 0.3s;
 }
 
-.recenter-control img{
+.recenter-control img {
     width: 16px;
     height: 16px;
     transition: filter 0.3s;
-}
-
-.recenter-control:hover img{
-    filter: brightness(0.15) saturate(0.2) contrast(1.1);
-}
-
-.recenter-control:hover {
-    background: var(--primary-color);
 }
 
 .lollipop-marker {
@@ -412,7 +441,11 @@ button:focus {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    
+
+    .container {
+        padding: 0;
+    }
+
     /* Sidebar becomes top bar */
     .sidebar {
         width: 100%;
@@ -422,7 +455,7 @@ button:focus {
         justify-content: space-between;
         padding: 10px;
         backdrop-filter: blur(4px);
-        border-bottom: 1px solid var(--primary-color);
+        border-radius: 0;
     }
 
     .sidebar-content {
@@ -450,7 +483,8 @@ button:focus {
         width: 100%;
         display: flex;
         padding: 0;
-        align-items: baseline;
+        align-items: center;
+        gap: 8px;
     }
 
     .title-block h1 {
@@ -460,13 +494,14 @@ button:focus {
 
     .title-block h2 {
         width: 100%;
-        font-size: 18px;
+        font-size: 17px;
         font-weight: lighter;
         color: var(--text-light);
+        line-height: 90%;
     }
 
     .title-block .header a img {
-        
+
         width: 24px;
         height: 24px;
         margin-top: 8px;
@@ -480,6 +515,11 @@ button:focus {
         align-items: baseline;
     }
 
+    .reset-btn img {
+        width: 16px;
+        height: 16px;
+    }
+
     .latlon-section {
         flex-wrap: wrap;
     }
@@ -488,7 +528,8 @@ button:focus {
         flex: 1 1 45%;
     }
 
-    input, .calculate-btn {
+    input,
+    .calculate-btn {
         font-size: 14px;
         padding: 8px;
     }
@@ -496,6 +537,18 @@ button:focus {
     .calculate-btn {
         flex: 1 1 100%;
         margin-top: 4px;
+    }
+
+
+    .results-section {
+        position: absolute;
+        bottom: 0px;
+        z-index: 2;
+        width: 100%;
+        height: 30%;
+        display: flex;
+        flex-direction: column;
+        justify-content: first baseline;
     }
 
     /* Move score card to bottom */
@@ -511,7 +564,8 @@ button:focus {
     }
 
     .main-score {
-        font-size: 36px;
+        font-size: 32px;
+        margin-bottom: -20px;
     }
 
     .breakdown {
@@ -531,8 +585,58 @@ button:focus {
         height: calc(100vh - 60px);
     }
 
+    .leaflet-control-scale {
+        margin-top: 24dvh !important;
+    }
 
-    .leaflet-control-zoom, .recenter-control {
+    .leaflet-control-zoom {
+        margin-top: 24dvh !important;
         transform: scale(0.9);
     }
+
+    .recenter-control {
+        transform: scale(0.9);
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+
+    .leaflet-control-zoom a:hover {
+        background: var(--primary-color);
+        color: var(--text-dark);
+    }
+
+    .recenter-control:hover img {
+        filter: brightness(0.15) saturate(0.2) contrast(1.1);
+    }
+
+    .recenter-control:hover {
+        background: var(--primary-color);
+    }
+
+    .calculate-btn:hover {
+        background: var(--primary-color);
+        color: var(--secondary-color);
+        transition: background 0.4s, color 0.4s;
+    }
+
+    .suggestions div:hover {
+        background: var(--primary-color);
+        color: var(--text-dark);
+    }
+
+    .reset-btn:hover img {
+        rotate: 360deg;
+    }
+
+    .feedback-btn.active:hover {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .feedback-btn:hover {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
 }
