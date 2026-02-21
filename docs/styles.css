@@ -586,11 +586,11 @@ button:focus {
     }
 
     .leaflet-control-scale {
-        margin-top: 24dvh !important;
+        margin-top: 210px !important;
     }
 
     .leaflet-control-zoom {
-        margin-top: 24dvh !important;
+        margin-top: 210px !important;
         transform: scale(0.9);
     }
 
