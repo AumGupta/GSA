@@ -47,11 +47,12 @@ CREATE TABLE IF NOT EXISTS feedback (
     lat FLOAT,
     lon FLOAT,
     liked BOOLEAN,
-    accessibility_score BIGINT,
-    proximity_score BIGINT,
-    quantity_score BIGINT,
-    area_score BIGINT,
-    diversity_score BIGINT
+    accessibility_score FLOAT,
+    proximity_score FLOAT,
+    quantity_score FLOAT,
+    area_score FLOAT,
+    diversity_score FLOAT,
+    timestamp TIMESTAMP
 );
 
 -- 5. Critical Indices for Performance
