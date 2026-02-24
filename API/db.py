@@ -1,20 +1,13 @@
 # Database connection module for the Green Spaces Accessibility API
-# This module provides a function to establish a connection to the PostgreSQL database.
 
-# Importing necessary libraries
 import os
 import psycopg
 
-# Load database password from environment variable for security
-POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
+# Load the full connection URL from environment variable
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Function to get a connection to the PostgreSQL database
 def get_connection():
-    return psycopg.connect(
-        host="localhost",
-        dbname="gsa_db",
-        user="postgres",
-        password=POSTGRES_PASSWORD,
-        port=5432
-    )
-
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL environment variable is not set!")
+    # Connect to Supabase Postgres using SSL
+    return psycopg.connect(DATABASE_URL)
