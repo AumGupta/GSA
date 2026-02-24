@@ -278,7 +278,7 @@ function getScore() {
             drawParks(data.scores.parks);
             drawRoute(data.nearest_park_route);
 
-            scoreCard.style.display = "visible";
+            scoreCard.style.display = "block";
         })
         .catch(err => {
             console.error(err);
