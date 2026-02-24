@@ -109,7 +109,7 @@ map.on('click', function (e) {
 
 
 function updateLocation(lat, lon) {
-    scoreCard.style.visibility = "hidden";
+    scoreCard.style.display = "none";
 
     currentLocation = [lat, lon];
     resetBtn.style.visibility = "visible";
@@ -217,7 +217,7 @@ resetBtn.addEventListener("click", () => {
     suggestionsWrapper.style.visibility = "hidden";
     searchWrapper.classList.remove("active");
     clearBtn.style.display = "none";
-    scoreCard.style.visibility = "hidden";
+    scoreCard.style.display = "none";
     resetBtn.style.visibility = "hidden";
 
     // remove marker and circle
@@ -268,7 +268,6 @@ function getScore() {
 
     recenterBtn.click();
 
-
     // // for testing with local JSON file
     // fetch(API_BASE_URL)
     fetch(API_BASE_URL + `/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
@@ -279,7 +278,7 @@ function getScore() {
             drawParks(data.scores.parks);
             drawRoute(data.nearest_park_route);
 
-            scoreCard.style.visibility = "visible";
+            scoreCard.style.display = "visible";
         })
         .catch(err => {
             console.error(err);

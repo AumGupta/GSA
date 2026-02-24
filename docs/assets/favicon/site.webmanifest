@@ -1,10 +1,23 @@
 {
-    "name": "GSA - Green Space Accessibility",
-    "short_name": "GSA",
-    "description": "Get real-time accessibility scores for green spaces. Search for any address and see how accessible nearby parks are based on distance, size, and amenities.",
-    "start_url": "/index.html",
-    "display": "standalone",
-    "background_color": "#000000",
-    "theme_color": "#FFFFFF",
-    "orientation": "portrait"
+  "name": "GSA - Green Space Accessibility",
+  "short_name": "GSA",
+  "description": "Get real-time accessibility scores for green spaces. Search for any address and see how accessible nearby parks are based on distance, size, and amenities.",
+  "start_url": "/GSA/",
+  "scope": "/GSA/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FFFFFF",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
