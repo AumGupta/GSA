@@ -2,6 +2,4 @@ fastapi
 uvicorn
 psycopg
 pydantic
-json
-math
 collections
