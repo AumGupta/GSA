@@ -11,6 +11,8 @@ from collections import Counter
 from API.routers.routing import route_to_nearest_park
 from API.routers.spatial import get_green_areas_buffer
 
+INSIDE_THRESHOLD = 10
+
 # Creating the router for accessibility endpoints
 router = APIRouter(prefix="/accessibility", tags=["Accessibility"])
 
@@ -79,19 +81,23 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
         }
 
     # Proximity score: based on distance to nearest park, with a decay function
-    proximity_total = 0
+    nearest_distance = min(park[4] for park in parks)
 
-    for park in parks:
-        distance = park[4]  # distance_m
-        contribution = 1 - (distance / buffer_m)
+    if nearest_distance <= INSIDE_THRESHOLD:
+        proximity_score = 10
 
-        if contribution < 0:
-            contribution = 0
+    else:
+        proximity_total = 0
+        for park in parks:
+            distance = park[4]
+            contribution = 1 - (distance / buffer_m)
 
-        proximity_total += contribution
+            if contribution < 0:
+                contribution = 0
 
-    proximity_score = (proximity_total / len(parks))* 10
+            proximity_total += contribution
 
+        proximity_score = (proximity_total / len(parks)) * 10
     # Quantity score: based on number of parks found
     n_parks = len(parks)
     quantity_score = (1 - math.exp(-n_parks / 5)) * 10
@@ -127,7 +133,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
     nearest_park_route = route_to_nearest_park(lat, lon)
     return {
         "accessibility_score": round(accessibility, 2),
-        "nearest_park_route": nearest_park_route,
+        #"nearest_park_route": nearest_park_route,
         "scores": {
             "proximity": round(proximity_score, 2),
             "quantity": round(quantity_score, 2),
