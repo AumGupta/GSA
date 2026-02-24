@@ -117,127 +117,19 @@ erDiagram
 
 ## API
 
-The project exposes a RESTful API built with **FastAPI**.
-The API acts as the communication layer between the PostgreSQL/PostGIS database and the frontend application, allowing spatial analysis, accessibility evaluation, routing, and user feedback storage.
+| Endpoint                                    | Method | Description / Flow                                                            |
+| ------------------------------------------- | ------ | ----------------------------------------------------------------------------- |
+| `/`                                         | GET    | Base endpoint – verify API connectivity.                                      |
+| `/api/v1/green-area`                        | GET    | Get details of green areas. Flow: Location → GET → Area Data                  |
+| `/api/v1/green-area-buffer`                 | GET    | Get green areas within buffer. Flow: Location + Buffer → GET → Filtered Data  |
+| `/api/v1/accessibility/accessibility-score` | GET    | Compute accessibility score. Flow: Coordinates → Compute → Score              |
+| `/api/v1/routing/to-nearest-park`           | GET    | Get optimal route to nearest park. Flow: Coordinates → Calculate → Directions |
+| `/api/v1/feedback/`                         | POST   | Submit user feedback. Flow: Feedback → POST → Stored → Analytics/Improvements |
 
-The API is organized into three main components:
+Check out the entire API documentation [here](https://gsa-u4t8.onrender.com/docs#/).
 
-```
-API/
-│── routers/
-│── db/
-│── main.py
-```
-
----
-
-### 1. `main.py`
-
-`main.py` is the application entry point.
-It initializes the FastAPI application and registers all routers under the `/api/v1` prefix.
-
-Its responsibilities include:
-
-* Creating the FastAPI app instance
-* Including all API routers
-* Exposing the endpoints to the web server (Uvicorn)
-
----
-
-### 2. `db/`
-
-The `db` module manages the connection with the PostgreSQL database.
-
-It provides:
-
-* Database engine configuration
-* Session management
-* Dependency injection (`get_db`) used by the routers
-
-All endpoints access the database through this module, ensuring that connections are opened and closed safely during each request.
-
----
-
-### 3. `routers/`
-
-The `routers` directory contains the API endpoints grouped by functionality.
-Each router defines specific operations and queries executed on the PostGIS database.
-
-#### a. `spatial` (GET)
-
-Provides basic spatial queries.
-It receives geographic coordinates (latitude and longitude) and retrieves nearby green areas from the database.
-
-Main functionality:
-
-* Query green areas
-* Spatial filtering using PostGIS geometry operations
-
----
-
-#### b. `accessibility` (GET)
-
-Calculates the **green space accessibility index** for a given location.
-
-The endpoint analyzes green areas within a specified buffer distance and computes multiple indicators:
-
-* **Proximity score** – distance to the nearest green area
-* **Quantity score** – number of green areas in range
-* **Area score** – total surface of accessible green areas
-* **Diversity score** – variation of green area types
-
-This module performs spatial analysis directly in PostGIS and returns a structured JSON response with the computed indicators.
-
----
-
-#### c. `routing` (GET)
-
-Computes the walking route from a user location to the nearest green area.
-
-The routing process uses **pgRouting** and the OpenStreetMap road network stored in the database.
-
-Steps performed:
-
-1. Snap the user coordinates to the closest network vertex
-2. Identify the nearest green area
-3. Snap the park centroid to the road network
-4. Calculate the shortest path using Dijkstra’s algorithm
-5. Return the route as GeoJSON
-
-The endpoint returns:
-
-* Destination park name
-* Route distance (meters)
-* Connectivity status
-* Route geometry (GeoJSON LineString)
-
----
-
-#### d. `feedback` (POST)
-
-Stores user feedback and calculated accessibility results.
-
-The endpoint receives a JSON payload from the frontend and inserts it into the database.
-This allows the application to keep a record of user interactions and computed scores.
-
----
-
-## Request/Response Format
-
-All endpoints communicate using JSON.
-Spatial outputs such as routes are returned in **GeoJSON format**, making them directly compatible with web mapping libraries such as Leaflet or Mapbox GL JS.
-
----
-
-## Summary
-
-The API integrates:
-
-* **FastAPI** → request handling
-* **PostgreSQL/PostGIS** → spatial database
-* **pgRouting** → network analysis
-
-It serves as the analytical backend of the application, providing spatial queries, accessibility evaluation, routing computation, and persistent user feedback storage.
+> [!note]
+> The API documentation might take a while to open, be patient.
 
 ## How to Run the Project Locally
 
