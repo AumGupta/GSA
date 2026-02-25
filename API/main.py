@@ -3,14 +3,18 @@
 
 # Importing necessary libraries
 from fastapi import FastAPI
-from API.routers import accessibility, routing, spatial
+from API.routers import accessibility, feedback, routing, spatial
 from fastapi.middleware.cors import CORSMiddleware
 
 
 # Creating the FastAPI app
 app = FastAPI(title="Green Spaces Accessibility API")
 
-origins = ["*"]   # allow everyone for now
+origins = [
+    "https://aumgupta.github.io",
+    "http://localhost:3000",
+    "*"
+]  
 
 # Adding CORS middleware to allow cross-origin requests 
 # REMEMBER TO CHANGE THIS IN PRODUCTION!!!!!!!!
@@ -30,4 +34,5 @@ def root():
 # Conetion with the spatial router
 app.include_router(spatial.router, prefix="/api/v1")
 app.include_router(accessibility.router, prefix="/api/v1")
-app.include_router(routing.router, prefix="/api/v1/routing")
+app.include_router(routing.router, prefix="/api/v1")
+app.include_router(feedback.router, prefix="/api/v1")
