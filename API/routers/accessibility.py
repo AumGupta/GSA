@@ -133,7 +133,7 @@ def accessibility_score(lat: float, lon: float, buffer_m: float = 500):
     nearest_park_route = route_to_nearest_park(lat, lon)
     return {
         "accessibility_score": round(accessibility, 2),
-        #"nearest_park_route": nearest_park_route,
+        "nearest_park_route": nearest_park_route,
         "scores": {
             "proximity": round(proximity_score, 2),
             "quantity": round(quantity_score, 2),
