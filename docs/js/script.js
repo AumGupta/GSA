@@ -259,12 +259,15 @@ function getScore() {
     if (parksLayer) map.removeLayer(parksLayer);
     if (routeLayer) map.removeLayer(routeLayer);
 
+
     bufferCircle = L.circle([lat, lon], {
         radius: 500,
         color: '#0ee071',
         fillColor: '#0ee071',
         fillOpacity: 0.07
     }).addTo(map);
+
+    document.body.classList.add("loading");
 
     recenterBtn.click();
 
@@ -321,6 +324,8 @@ function updateScores(data) {
 
     document.getElementById("diversity-desc").innerText =
         `Types: ${types.join(", ")}`;
+
+    document.body.classList.remove("loading");
 }
 
 function drawParks(parks) {
