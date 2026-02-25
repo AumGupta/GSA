@@ -15,6 +15,14 @@
     --accent-pink: #f92672;
 }
 
+body.loading {
+    cursor: wait;
+}
+
+body.loading * {
+    cursor: wait !important;
+}
+
 * {
     margin: 0;
     padding: 0;
