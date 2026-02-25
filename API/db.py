@@ -4,17 +4,23 @@ import os
 import psycopg
 
 # Load the full connection URL from environment variable
-DATABASE_URL = os.environ.get("DATABASE_URL")
+#DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_connection():
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL environment variable is not set!")
-    # Connect to Supabase Postgres using SSL
+    DB_HOST = os.environ.get("DB_HOST")
+    DB_PORT = os.environ.get("DB_PORT")
+    DB_NAME = os.environ.get("DB_NAME")
+    DB_USER = os.environ.get("DB_USER")
+    DB_PASSWORD = os.environ.get("DB_PASSWORD")
+
+    if not DB_HOST:
+        raise RuntimeError("DB_HOST environment variable not found")
+
     return psycopg.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        database=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASSWORD,
         sslmode="require"
     )
