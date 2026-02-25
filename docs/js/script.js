@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://gsa-rrs6.onrender.com";
+const API_BASE_URL = "https://gsa-u4t8.onrender.com";
 // const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
 
 // // worldwide search
