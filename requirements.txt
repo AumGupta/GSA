@@ -1,3 +1,12 @@
+requests
+geopandas   
+sqlalchemy
+geoalchemy2
+psycopg2
+fastapi
+uvicorn
+psycopg
+pydantic
 fastapi
 uvicorn
 psycopg

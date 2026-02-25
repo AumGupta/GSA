@@ -1,5 +1,5 @@
-// const API_BASE_URL = "http://192.168.68.107:8000";
-const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
+const API_BASE_URL = "https://gsa-u4t8.onrender.com";
+// const API_BASE_URL = "data/mock-response.json"; // for testing with local JSON file
 
 // // worldwide search
 // const SEARCH_QUERY = `https://nominatim.openstreetmap.org/search?format=json&limit=10&q=${query}`;
@@ -109,7 +109,7 @@ map.on('click', function (e) {
 
 
 function updateLocation(lat, lon) {
-    scoreCard.style.visibility = "hidden";
+    scoreCard.style.display = "none";
 
     currentLocation = [lat, lon];
     resetBtn.style.visibility = "visible";
@@ -217,7 +217,7 @@ resetBtn.addEventListener("click", () => {
     suggestionsWrapper.style.visibility = "hidden";
     searchWrapper.classList.remove("active");
     clearBtn.style.display = "none";
-    scoreCard.style.visibility = "hidden";
+    scoreCard.style.display = "none";
     resetBtn.style.visibility = "hidden";
 
     // remove marker and circle
@@ -268,10 +268,9 @@ function getScore() {
 
     recenterBtn.click();
 
-
     // // for testing with local JSON file
-    fetch(API_BASE_URL)
-    // fetch(API_BASE_URL + `/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
+    // fetch(API_BASE_URL)
+    fetch(API_BASE_URL + `/api/v1/accessibility/accessibility-score?lat=${lat}&lon=${lon}&buffer_m=500`)
         .then(res => res.json())
         .then(data => {
 
@@ -279,7 +278,7 @@ function getScore() {
             drawParks(data.scores.parks);
             drawRoute(data.nearest_park_route);
 
-            scoreCard.style.visibility = "visible";
+            scoreCard.style.display = "block";
         })
         .catch(err => {
             console.error(err);
