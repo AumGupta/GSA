@@ -13,6 +13,7 @@ app = FastAPI(title="Green Spaces Accessibility API")
 origins = [
     "https://aumgupta.github.io",
     "http://localhost:3000",
+    "*"
 ]  
 
 # Adding CORS middleware to allow cross-origin requests 
