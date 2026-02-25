@@ -110,6 +110,19 @@ erDiagram
         GEOMETRY(LineString) geometry
     }
 
+    feedback {
+        SERIAL id PK
+        DOUBLE lat
+        DOUBLE lon
+        BOOLEAN liked
+        DOUBLE accessibility_score
+        DOUBLE proximity_score
+        DOUBLE quantity_score
+        DOUBLE area_score
+        DOUBLE diversity_score
+        TIMESTAMP timestamp
+    }
+
 ```
 
 > [!IMPORTANT]
@@ -131,31 +144,27 @@ Check out the entire API documentation [here](https://gsa-u4t8.onrender.com/docs
 > [!note]
 > The API documentation might take a while to open, be patient.
 
-## How to Run the Project Locally
+---
 
-This section explains how to set up and execute the Green Space Accessibility (GSA) API on a local machine.
+Here is the **corrected and concise** version of your “Running Locally” section reflecting the actual setup:
 
 ---
+
+## Running Locally
+
+> [!note]
+> The application is already deployed. The steps below are only needed if you want to run the full stack locally. It can be done using the following simple 8 steps.
 
 ### 1. Requirements
 
-Install the following software before starting:
+Install:
 
-* **Miniconda** (Python environment manager)
-* **PostgreSQL** (v14 or newer recommended)
-* **PostGIS** extension
-* **pgRouting** extension
+* **Python 3.10+**
+* **PostgreSQL (v14+)**
+* **PostGIS**
+* **pgRouting**
 * **Git**
 
-You can verify installations:
-
-```bash
-python --version
-psql --version
-conda --version
-```
-
----
 
 ### 2. Clone the Repository
 
@@ -164,30 +173,17 @@ git clone https://github.com/AumGupta/GSA.git
 cd GSA
 ```
 
----
+### 3. Install Python Dependencies
 
-### 3. Create the Conda Environment
-
-The project uses **Miniconda** to manage dependencies.
-
-Create and activate the environment:
-
-```bash
-conda create -n gsa_env python=3.10
-conda activate gsa_env
-```
-
-Install the required Python packages:
+Create a virtual environment (optional but recommended), then install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
 ### 4. Configure Environment Variables
 
-Create a `.env` file in the root directory of the project:
+Create a `.env` file in the project root:
 
 ```
 DB_HOST=localhost
@@ -197,13 +193,10 @@ DB_USER=postgres
 DB_PASSWORD=your_password
 ```
 
-The API reads these values to connect to the PostgreSQL database.
 
----
+### 5. Setup the Database Schema
 
-### 5. Create and Prepare the Database
-
-Open PostgreSQL (psql or PgAdmin) and create the database:
+Create the database and enable extensions:
 
 ```sql
 CREATE DATABASE green_accessibility;
@@ -213,27 +206,25 @@ CREATE EXTENSION postgis;
 CREATE EXTENSION pgrouting;
 ```
 
----
+Then run the provided schema file:
 
-### 6. Load Spatial Data
-
-You must populate the database with OpenStreetMap data.
-
-1. Download a `.osm.pbf` file (e.g., Portugal or Lisbon) from Geofabrik.
-2. Import the road network using `osm2pgrouting` (creates `ways` and `vertices` tables).
-3. Run the ETL scripts included in the repository to generate the `green_areas` table.
-
-After loading data, create spatial indexes:
-
-```sql
-CREATE INDEX idx_green_geom ON green_areas USING GIST(geometry);
-CREATE INDEX idx_vertices_geom ON vertices USING GIST(geometry);
-CREATE INDEX idx_ways_geom ON ways USING GIST(geometry);
+```bash
+psql -U postgres -d green_accessibility -f ETL/sql/schema.sql
 ```
 
----
 
-### 7. Run the API
+### 6. Populate the Database (ETL)
+
+After the schema is created, populate the database by running:
+
+```bash
+python ETL/main.py
+```
+
+This will load and process the required spatial data.
+
+
+### 7. Run the API Locally
 
 Start the FastAPI server:
 
@@ -241,90 +232,28 @@ Start the FastAPI server:
 uvicorn API.main:app --reload
 ```
 
-If successful, the terminal will display:
+The API will run at:
 
 ```
-Uvicorn running on http://127.0.0.1:8000
+http://127.0.0.1:8000
 ```
 
----
 
-### 8. API Documentation
+### 8. Connect the Frontend to the Local API
 
-FastAPI automatically provides interactive documentation:
-
-* Swagger UI → http://127.0.0.1:8000/docs
-* ReDoc → http://127.0.0.1:8000/redoc
-
-You can test all endpoints directly from the browser.
-
----
-
-### 9. Example Requests
-
-**Nearest green areas**
+Update the API base URL in:
 
 ```
-http://127.0.0.1:8000/api/v1/spatial/green-area?lat=38.7385&lon=-9.1324
+docs/js/script.js
 ```
 
-**Accessibility index**
+Change the `API_BASE_URL` to:
 
-```
-http://127.0.0.1:8000/api/v1/accessibility/index?lat=38.7385&lon=-9.1324
-```
-
-**Route to nearest park**
-
-```
-http://127.0.0.1:8000/api/v1/routing/to-nearest-park?lat=38.7385&lon=-9.1324
+```javascript
+const API_BASE_URL = "http://127.0.0.1:8000"
 ```
 
-**Send feedback (POST)**
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/feedback \
-     -H "Content-Type: application/json" \
-     -d '{"user_id":"test","message":"example feedback"}'
-```
-
----
-
-### 10. Troubleshooting
-
-**Error: `Could not import module "main"`**
-
-* Make sure you are inside the project root directory
-* Confirm the file path `API/main.py` exists
-
-**Database connection error**
-
-* Verify PostgreSQL is running
-* Check credentials in `.env`
-
-**Routing takes too long**
-
-* Ensure `ways.cost` is measured in meters
-* Confirm spatial indexes exist on geometries
-
----
-
-### Summary
-
-To run the project locally:
-
-1. Create the Conda environment
-2. Prepare the PostGIS + pgRouting database
-3. Load OSM and green area data
-4. Start the FastAPI server
-5. Test endpoints using the browser documentation
-
-The API will then be available at:
-
-```
-http://127.0.0.1:8000/api/v1/
-```
-
+This ensures the frontend connects to your local API (and therefore your local PostgreSQL database).
 
 ## Team
 [**Om Gupta**](https://github.com/AumGupta) & [**Santiago José Lara**](https://github.com/SLara24)
