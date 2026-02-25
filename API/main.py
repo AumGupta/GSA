@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Creating the FastAPI app
 app = FastAPI(title="Green Spaces Accessibility API")
 
-origins = ["https://aumgupta.github.io/GSA/"]   
+origins = ["*"]   
 
 # Adding CORS middleware to allow cross-origin requests 
 # REMEMBER TO CHANGE THIS IN PRODUCTION!!!!!!!!
