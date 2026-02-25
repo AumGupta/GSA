@@ -17,7 +17,7 @@ def get_connection():
         raise RuntimeError("DB_HOST environment variable not found")
 
     return psycopg.connect(
-        host=DB_HOST,
+        host='db.uqayijuvmanqhyjvjcwb.supabase.co',
         port=DB_PORT,
         dbname=DB_NAME,
         user=DB_USER,
